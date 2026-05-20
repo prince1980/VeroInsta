@@ -30,11 +30,27 @@ export default async function youtubedl(url: string, flags: any) {
             fs.mkdirSync(tempDir, { recursive: true });
         }
         const env = { ...process.env, TMP: tempDir, TEMP: tempDir };
-        const { stdout } = await execFileAsync(binPath, args, { maxBuffer: 1024 * 1024 * 50, env }); // 50MB buffer
-        if (flags.dumpSingleJson) {
-            return JSON.parse(stdout);
+
+        let runArgs = [...args];
+        if (process.env.NODE_ENV === 'development') {
+             runArgs = ['--cookies-from-browser', 'chrome', ...args];
         }
-        return stdout;
+
+        try {
+            const { stdout } = await execFileAsync(binPath, runArgs, { maxBuffer: 1024 * 1024 * 50, env }); // 50MB buffer
+            if (flags.dumpSingleJson) return JSON.parse(stdout);
+            return stdout;
+        } catch (err) {
+            if (process.env.NODE_ENV === 'development') {
+                // Fallback to Edge if Chrome fails
+                console.log("Chrome cookies failed, trying Edge...");
+                runArgs = ['--cookies-from-browser', 'edge', ...args];
+                const { stdout } = await execFileAsync(binPath, runArgs, { maxBuffer: 1024 * 1024 * 50, env });
+                if (flags.dumpSingleJson) return JSON.parse(stdout);
+                return stdout;
+            }
+            throw err;
+        }
     } catch (error: any) {
         if (error.stdout) {
             try {
