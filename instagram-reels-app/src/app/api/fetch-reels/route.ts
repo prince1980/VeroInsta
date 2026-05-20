@@ -23,6 +23,9 @@ export async function POST(request: Request) {
     });
 
     const payload = output as any;
+    if (!payload) {
+      throw new Error("Received empty or null response from Instagram.");
+    }
     // Parse the entries. youtube-dl returns 'entries' for a playlist.
     const entries = payload.entries || [];
     

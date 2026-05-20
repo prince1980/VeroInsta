@@ -22,6 +22,9 @@ export async function POST(request: Request) {
 
     // Find the best mp4 URL
     const payload = output as any;
+    if (!payload) {
+        throw new Error("Received empty or null response from Instagram.");
+    }
     const format = payload.formats?.find((f: any) => f.ext === 'mp4' && f.vcodec !== 'none') || 
                    payload.formats?.find((f: any) => f.ext === 'mp4') || 
                    payload;
