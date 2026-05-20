@@ -21,9 +21,10 @@ export async function POST(request: Request) {
     });
 
     // Find the best mp4 URL
-    const format = output.formats?.find((f: any) => f.ext === 'mp4' && f.vcodec !== 'none') || 
-                   output.formats?.find((f: any) => f.ext === 'mp4') || 
-                   output;
+    const payload = output as any;
+    const format = payload.formats?.find((f: any) => f.ext === 'mp4' && f.vcodec !== 'none') || 
+                   payload.formats?.find((f: any) => f.ext === 'mp4') || 
+                   payload;
 
     const downloadUrl = format.url;
 
