@@ -1,6 +1,7 @@
 import { execFile } from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
+import fs from 'fs';
 
 const execFileAsync = promisify(execFile);
 const binPath = process.platform === 'win32' 
@@ -24,7 +25,12 @@ export default async function youtubedl(url: string, flags: any) {
     args.push(url);
 
     try {
-        const { stdout } = await execFileAsync(binPath, args, { maxBuffer: 1024 * 1024 * 50 }); // 50MB buffer
+        const tempDir = path.join(process.cwd(), 'temp');
+        if (!fs.existsSync(tempDir)) {
+            fs.mkdirSync(tempDir, { recursive: true });
+        }
+        const env = { ...process.env, TMP: tempDir, TEMP: tempDir };
+        const { stdout } = await execFileAsync(binPath, args, { maxBuffer: 1024 * 1024 * 50, env }); // 50MB buffer
         if (flags.dumpSingleJson) {
             return JSON.parse(stdout);
         }
