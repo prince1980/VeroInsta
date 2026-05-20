@@ -22,8 +22,9 @@ export async function POST(request: Request) {
       ]
     });
 
+    const payload = output as any;
     // Parse the entries. youtube-dl returns 'entries' for a playlist.
-    const entries = output.entries || [];
+    const entries = payload.entries || [];
     
     // Sometimes Instagram returns raw entries directly, we map them to a clean format
     const reels = entries.map((entry: any, index: number) => ({
@@ -37,12 +38,12 @@ export async function POST(request: Request) {
 
     if (reels.length === 0) {
       // If it failed to get entries, it might have just gotten a single video or failed due to auth
-      if (output.id && !output.entries) {
+      if (payload.id && !payload.entries) {
         reels.push({
-          id: output.id,
-          title: output.title || 'Instagram Reel',
-          url: output.webpage_url || url,
-          thumbnail: output.thumbnail,
+          id: payload.id,
+          title: payload.title || 'Instagram Reel',
+          url: payload.webpage_url || url,
+          thumbnail: payload.thumbnail,
         });
       } else {
         return NextResponse.json({ 
