@@ -3,14 +3,13 @@ import youtubedl from '@/lib/youtubedl';
 
 export async function POST(request: Request) {
   try {
-    const { url } = await request.json();
+    const { url, sessionId } = await request.json();
 
     if (!url || !url.includes('instagram.com')) {
       return NextResponse.json({ error: 'Invalid Instagram URL' }, { status: 400 });
     }
 
-    // Using youtube-dl-exec to fetch playlist/profile metadata
-    const output = await youtubedl(url, {
+    const ytDlpOptions: any = {
       dumpSingleJson: true,
       flatPlaylist: true,
       noWarnings: true,
@@ -18,9 +17,16 @@ export async function POST(request: Request) {
       preferFreeFormats: true,
       addHeader: [
         'referer:instagram.com',
-        'user-agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        'user-agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
       ]
-    });
+    };
+
+    if (sessionId) {
+      ytDlpOptions.addHeader.push(`Cookie:sessionid=${sessionId}`);
+    }
+
+    // Using youtubedl-exec to fetch playlist/profile metadata
+    const output = await youtubedl(url, ytDlpOptions);
 
     const payload = output as any;
     if (!payload) {

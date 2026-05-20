@@ -13,6 +13,7 @@ type Reel = {
 
 export default function Home() {
   const [url, setUrl] = useState('');
+  const [sessionId, setSessionId] = useState('');
   const [reels, setReels] = useState<Reel[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
@@ -30,7 +31,7 @@ export default function Home() {
       const res = await fetch('/api/fetch-reels', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url }),
+        body: JSON.stringify({ url, sessionId }),
       });
 
       const data = await res.json();
@@ -63,22 +64,17 @@ export default function Home() {
     setDownloadingCount(selectedIds.size);
     const selectedReels = reels.filter(r => selectedIds.has(r.id));
     
-    // We download them in parallel but sequentially trigger window.open or fetch
-    // To avoid browser popup blockers and allow saving, we can fetch the blob 
-    // and trigger a download via object URL.
-    
     for (const reel of selectedReels) {
       try {
         const res = await fetch('/api/download-reel', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url: reel.url }),
+          body: JSON.stringify({ url: reel.url, sessionId }),
         });
         
         const data = await res.json();
         
         if (data.downloadUrl) {
-          // Trigger download
           const a = document.createElement('a');
           a.href = data.downloadUrl;
           a.download = `Reel-${reel.id}.mp4`;
@@ -90,12 +86,10 @@ export default function Home() {
       } catch (err) {
         console.error('Failed to download reel:', reel.id, err);
       }
-      // slight delay to prevent overwhelming the browser
       await new Promise(r => setTimeout(r, 500));
     }
     
     setDownloadingCount(0);
-    // Optionally clear selection after download
     setSelectedIds(new Set());
   };
 
@@ -105,7 +99,7 @@ export default function Home() {
         <h1>Download Instagram Reels</h1>
         <p>Paste a profile or reel URL below to fetch and download high-quality videos instantly.</p>
         
-        <div className="search-container">
+        <div className="search-container" style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
           <input 
             type="text" 
             className="search-input" 
@@ -113,6 +107,13 @@ export default function Home() {
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && fetchReels()}
+          />
+          <input 
+            type="password" 
+            className="search-input" 
+            placeholder="Optional: sessionid cookie for private/profile access" 
+            value={sessionId}
+            onChange={(e) => setSessionId(e.target.value)}
           />
           <button 
             className={`btn btn-primary search-button ${loading ? 'btn-disabled' : ''}`}
