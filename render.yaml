@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: vero-insta
+    env: node
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # Set this to your app's final Render URL later if needed for the keep-alive script or CORS
+      - key: RENDER_EXTERNAL_URL
+        sync: false 

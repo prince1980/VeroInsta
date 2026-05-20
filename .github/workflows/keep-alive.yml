@@ -1,0 +1,16 @@
+name: Keep Alive Cron
+
+on:
+  schedule:
+    # Runs every 10 minutes to prevent the free tier Render app from spinning down
+    - cron: "*/10 * * * *"
+  workflow_dispatch: # Allows you to manually trigger it from the GitHub Actions tab
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Render App
+        # Replace 'https://your-app-name.onrender.com' with your actual Render URL once deployed
+        run: curl -sSf https://your-app-name.onrender.com > /dev/null
+        continue-on-error: true # Prevents the workflow from failing completely if the site is temporarily down
