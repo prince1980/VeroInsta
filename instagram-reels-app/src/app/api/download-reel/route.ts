@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import youtubedl from 'youtube-dl-exec';
+import youtubedl from '@/lib/youtubedl';
 
 export async function POST(request: Request) {
   try {
